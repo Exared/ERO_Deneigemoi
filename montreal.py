@@ -23,7 +23,7 @@ mainDistricts = ["L'Île-Bizard–Sainte-Geneviève",
 
 disctrictError = ["Lachine", "Rivière-des-Prairies–Pointe-aux-Trembles"]
 
-
+drone_speed = 45 #  km/h
 
 def getGraphFromDistrict(district):
     t1 = time.time()
@@ -101,16 +101,74 @@ def get_path_from_file(district):
         lst.append(int(line.strip()))
     return lst
 
+def estimate_length(G, path):
+    i = 0
+    total = 0
+    while i < len(path) - 1:
+        src = path[i]
+        dest = path[i + 1]
+        if ("length" in G[src][dest][0]):
+            total += G[src][dest][0]["length"]
+        i += 1
+    return round(total / 1000, 2)
 
-def unSnowMontreal():
+def estimate_time_drone(distance):
+    return distance / drone_speed
+
+def printprocess(district):
+    if (district == "L'Île-Bizard–Sainte-Geneviève"):
+        print("Processing \033[38;5;6mL'Île-Bizard–Sainte-Geneviève\033[0;0m ...")
+    if (district == "Pierrefonds-Roxboro"):
+        print("Processing \033[38;5;214mPierrefonds-Roxboro\033[0;0m ...")
+    if (district == "Saint-Laurent"):
+        print("Processing \033[38;5;118mSaint-Laurent\033[0;0m ...")
+    if (district == "LaSalle"):
+        print("Processing \033[38;5;160mLaSalle\033[0;0m ...")
+    if (district == "Verdun"):
+        print("Processing \033[38;5;25mVerdun\033[0;0m ...")
+    if (district == "Le Sud-Ouest"):
+        print("Processing \033[38;5;40mLe Sud-Ouest\033[0;0m ...")
+    if (district == "Côte-des-Neiges–Notre-Dame-de-Grâce"):
+        print("Processing \033[38;5;220mCôte-des-Neiges–Notre-Dame-de-Grâce\033[0;0m ...")
+    if (district == "Outremont"):
+        print("Processing \033[38;5;82mOutremont\033[0;0m ...")
+    if (district == "Ville-Marie"):
+        print("Processing \033[38;5;202mVille-Marie\033[0;0m ...")
+    if (district == "Le Plateau-Mont-Royal"):
+        print("Processing \033[38;5;201mLe Plateau-Mont-Royal\033[0;0m ...")
+    if (district == "Rosemont—La Petite-Patrie"):
+        print("Processing \033[38;5;80mRosemont—La Petite-Patrie\033[0;0m ...")
+    if (district == "Villeray-Saint-Michel-Parc-Extension"):
+        print("Processing \033[38;5;196mVilleray-Saint-Michel-Parc-Extension\033[0;0m ...")
+    if (district == "Ahuntsic-Cartierville"):
+        print("Processing \033[38;5;197mAhuntsic-Cartierville\033[0;0m ...")
+    if (district == "Montreal-Nord"):
+        print("Processing \033[38;5;226mMontreal-Nord\033[0;0m ...")
+    if (district == "Saint-Leonard"):
+        print("Processing \033[38;5;214mSaint-Leonard\033[0;0m ...")
+    if (district == "Mercier–Hochelaga-Maisonneuve"):
+        print("Processing \033[38;5;228mMercier–Hochelaga-Maisonneuve\033[0;0m ...")
+    if (district == "Anjou"):
+        print("Processing \033[38;5;46mAnjou\033[0;0m ...")
+
+
+def launchDrones():
+    print("~~~~~~~~~~~~~   Launching Drones   ~~~~~~~~~~~~~")
     routes = []
     montrealdistricts = []
     for dist in mainDistricts:
+        printprocess(dist)
         G = get_graph_from(dist)
         montrealdistricts.append(G)
         path = get_path_from_file(dist)
+        lg = estimate_length(G, path)
+        print("     -> Distance travelled : " + str(lg) + " km.")
+        print("     -> Estimated time     : " + str(round(estimate_time_drone(lg))) + " hour(s).")
+        print("")
         routes.append(path)
     montreal = nx.compose_all(montrealdistricts)
     ox.plot_graph_routes(montreal, routes, route_colors=['b', 'g', 'r', 'c', 'm', 'y', 'b', 'g', 'r', 'c', 'm', 'y', 'b', 'g', 'r', 'c', 'm'])
 
-unSnowMontreal()
+
+
+launchDrones()
