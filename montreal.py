@@ -25,6 +25,44 @@ disctrictError = ["Lachine", "Rivière-des-Prairies–Pointe-aux-Trembles"]
 
 drone_speed = 45 #  km/h
 
+drone_per_district = [
+    ("L'Île-Bizard–Sainte-Geneviève", 1),
+    ("Pierrefonds-Roxboro", 2),
+    ("Saint-Laurent", 2),
+    ("LaSalle", 2),
+    ("Verdun", 2),
+    ("Le Sud-Ouest", 2),
+    ("Côte-des-Neiges–Notre-Dame-de-Grâce",2),
+    ("Outremont",2),
+    ("Ville-Marie",2),
+    ("Le Plateau-Mont-Royal",2),
+    ("Rosemont—La Petite-Patrie",2),
+    ("Villeray-Saint-Michel-Parc-Extension",2),
+    ("Ahuntsic-Cartierville",2),
+    ("Montreal-Nord",2),
+    ("Saint-Leonard",2),
+    ("Mercier–Hochelaga-Maisonneuve",2),
+    ("Anjou",2)
+]
+
+drone_routes_colors=['darkcyan',
+                     'darkorange',
+                     'yellowgreen',
+                     'darkred',
+                     'blue',
+                     'forestgreen',
+                     'goldenrod',
+                     'lime',
+                     'orangered',
+                     'mediumorchid',
+                     'aqua',
+                     'red',
+                     'lightcoral',
+                     'gold',
+                     'orange',
+                     'burlywood',
+                     'limegreen']
+
 def getGraphFromDistrict(district):
     t1 = time.time()
     print("Downloading " + district + " map..")
@@ -167,7 +205,7 @@ def launchDrones():
         print("")
         routes.append(path)
     montreal = nx.compose_all(montrealdistricts)
-    ox.plot_graph_routes(montreal, routes, route_colors=['b', 'g', 'r', 'c', 'm', 'y', 'b', 'g', 'r', 'c', 'm', 'y', 'b', 'g', 'r', 'c', 'm'])
+    ox.plot_graph_routes(montreal, routes, route_colors=drone_routes_colors)
 
 
 
