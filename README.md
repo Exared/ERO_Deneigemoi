@@ -10,3 +10,8 @@ Il y a deux fichiers:
 Nous recommandons de lire theory.pynb qui est bien plus
 facilement lisible. simplex.py existe pour le cas où
 l'ouverture de theory.pynb poserait problème.
+
+#partie pratique
+
+$ docker build -t ero .
+$ docker run ero
