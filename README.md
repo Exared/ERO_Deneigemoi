@@ -14,4 +14,5 @@ l'ouverture de theory.pynb poserait problème.
 #partie pratique
 
 $ docker build -t ero .
+
 $ docker run ero
