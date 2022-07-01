@@ -1,0 +1,336 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "14ac9596",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\"\"\"\n",
+    "1er problème:\n",
+    "\n",
+    "on connait:\n",
+    "- salaire : salaire à l'heure d'un employé | s = 12\n",
+    "- coût essence des machines trotoire /h    | gaz_t = 16 (8 l/h . 2 $/l)\n",
+    "- coût essence des machines route /h       | gaz_r = 20 (10 l/h . 2 $/l)\n",
+    "- coût maintenance machines par an         | m = 4.000 (rapporté à une journée: ~ 18$ /jour /machine)\n",
+    "- nb d'heure max (entre 5 et 8 am)         | nbh = 3\n",
+    "- vitesse machines trottoire               | v_t = 5 km/h\n",
+    "- vitesse machines route                   | v_r = 10 km/h\n",
+    "- durée globale: 180 jours (6 mois)\n",
+    "\n",
+    "On veut le nombre de machines de trotoire xt, le nombre de machines route xr, et le nombre d'employés xe,\n",
+    "sachant que xe = 2xr + xt\n",
+    "\n",
+    "On cherche ainsi à minimiser les effectifs (xe, xt, xr) afin de rentrer dans le budget\n",
+    "\n",
+    "FONCTION OBJECTIF: MIN z = 180*(10*xt + 16*xr + 20*xe)\n",
+    "  -> (s*xe + gaz_t*xt + gaz_r*xr) * nbJours\n",
+    "  -> z < 7M\n",
+    "\n",
+    "CONTRAINTES:\n",
+    "- z <= 7.000.000\n",
+    "-          45xr >= 228  ---> nb km max parcourus par deneigneuse R x nb deneigeuse R\n",
+    "-    30xt       >= 449  ---> nb km max parcourus par deneigneuse T x nb deneigeuse T\n",
+    "\n",
+    "-      xt + xr  <= 2200 ---> 220 appareils max\n",
+    "- xe            <= 3000 ---> 3000 employés max\n",
+    "\n",
+    "- xe  = xt + 2xr        ---> 2 employés par machime R, 1 employé par machine T\n",
+    "\"\"\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "85be776a",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Optimization terminated successfully.\n",
+      "         Current function value: 6390000.000000\n",
+      "         Iterations: 6\n",
+      "     con: array([0.])\n",
+      "     fun: 6390000.0\n",
+      " message: 'Optimization terminated successfully.'\n",
+      "     nit: 6\n",
+      "   slack: array([610000.,      0.,   1228.,      0.,   1626.,    826.])\n",
+      "  status: 0\n",
+      " success: True\n",
+      "       x: array([1374., 1318.,   28.])\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "import scipy as sc\n",
+    "from scipy.optimize import linprog as lin\n",
+    "\n",
+    "ze = 180 * 10\n",
+    "zt = 180 * 16\n",
+    "zr = 180 * 24\n",
+    "\n",
+    "c = [ze, zt, zr]\n",
+    "A = [[ze, zt, zr], [0, -100, -150], [0, -1, 0], [0, 0, -1], [1, 0, 0], [0, 1, 2]]\n",
+    "b = [7000000, -136000, -90, -28, 3000, 2200]\n",
+    "Aeq = [[1, -1, -2]]\n",
+    "beq = [0]\n",
+    "\n",
+    "\n",
+    "res = lin(c, A_ub=A, b_ub=b, A_eq=Aeq, b_eq=beq, method='simplex', options={\"disp\": True})\n",
+    "\n",
+    "print(res)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "f2565ba4",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\"\"\"\n",
+    "2ème solution\n",
+    "\n",
+    "Le nombre de MT doit être égal à 2x le nombre de MR\n",
+    "On cherche toujours à minimiser le coût\n",
+    "\"\"\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "69d63161",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Optimization terminated successfully.\n",
+      "         Current function value: 6434742.857143\n",
+      "         Iterations: 7\n",
+      "     con: array([0., 0.])\n",
+      "     fun: 6434742.857142857\n",
+      " message: 'Optimization terminated successfully.'\n",
+      "     nit: 7\n",
+      "   slack: array([5.65257143e+05, 0.00000000e+00, 6.87142857e+02, 3.60571429e+02,\n",
+      "       1.44571429e+03, 6.45714286e+02])\n",
+      "  status: 0\n",
+      " success: True\n",
+      "       x: array([1554.28571429,  777.14285714,  388.57142857])\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "import scipy as sc\n",
+    "from scipy.optimize import linprog as lin\n",
+    "\n",
+    "ze = 180 * 10\n",
+    "zt = 180 * 16\n",
+    "zr = 180 * 20\n",
+    "\n",
+    "c = [ze, zt, zr]\n",
+    "A = [[ze, zt, zr], [0, -100, -150], [0, -1, 0], [0, 0, -1], [1, 0, 0], [0, 1, 2]]\n",
+    "b = [7000000, -136000, -90, -28, 3000, 2200]\n",
+    "Aeq = [[1, -1, -2], [0, 1, -2]]\n",
+    "beq = [0, 0]\n",
+    "\n",
+    "\n",
+    "res = lin(c, A_ub=A, b_ub=b, A_eq=Aeq, b_eq=beq, method='simplex', options={\"disp\": True})\n",
+    "\n",
+    "print(res)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e50f1cf7",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\"\"\"\n",
+    "3ème solution\n",
+    "\n",
+    "On cherche maintenant à maximiser les xe, xt et xr de telle manière à utiliser complètement les 7M de budget\n",
+    "\"\"\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "dba3bda5",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Optimization terminated successfully.\n",
+      "         Current function value: -7000000.000000\n",
+      "         Iterations: 6\n",
+      "     con: array([0., 0.])\n",
+      "     fun: -7000000.0\n",
+      " message: 'Optimization terminated successfully.'\n",
+      "     nit: 6\n",
+      "   slack: array([    0.        , 11946.85990338,   755.41062802,   394.70531401,\n",
+      "        1309.17874396,   509.17874396])\n",
+      "  status: 0\n",
+      " success: True\n",
+      "       x: array([1690.82125604,  845.41062802,  422.70531401])\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "import scipy as sc\n",
+    "from scipy.optimize import linprog as lin\n",
+    "\n",
+    "ze = 180 * 10\n",
+    "zt = 180 * 16\n",
+    "zr = 180 * 20\n",
+    "\n",
+    "c = [-ze, -zt, -zr]\n",
+    "A = [[ze, zt, zr], [0, -100, -150], [0, -1, 0], [0, 0, -1], [1, 0, 0], [0, 1, 2]]\n",
+    "b = [7000000, -136000, -90, -28, 3000, 2200]\n",
+    "Aeq = [[1, -1, -2], [0, 1, -2]]\n",
+    "beq = [0, 0]\n",
+    "\n",
+    "\n",
+    "res = lin(c, A_ub=A, b_ub=b, A_eq=Aeq, b_eq=beq, method='simplex', options={\"disp\": True})\n",
+    "\n",
+    "print(res)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "id": "57f80dc4",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "\"\\nLors de la solution 2 on remarque que l'on dispose d'une marge de 565.000$ dans le budget,\\nsi l'on réserve 15.000$ pour les drones, nous avons 550.000$ de marge.\\nAu lieu d'utiliser plus de machines on peut incorporer le coût de maintenance, de rachat\\nou de rente de chacune des machines.\\n\""
+      ]
+     },
+     "execution_count": 30,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\"\"\"\n",
+    "Lors de la solution 2 on remarque que l'on dispose d'une marge de 565.000$ dans le budget,\n",
+    "si l'on réserve 15.000$ pour les drones, nous avons 550.000$ de marge.\n",
+    "Au lieu d'utiliser plus de machines on peut incorporer le coût de maintenance, de rachat\n",
+    "ou de rente de chacune des machines.\n",
+    "\"\"\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "id": "833f91af",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Optimization terminated successfully.\n",
+      "         Current function value: -550000.000000\n",
+      "         Iterations: 2\n",
+      "     con: array([0.])\n",
+      "     fun: -550000.0\n",
+      " message: 'Optimization terminated successfully.'\n",
+      "     nit: 2\n",
+      "   slack: array([0.])\n",
+      "  status: 0\n",
+      " success: True\n",
+      "       x: array([471.69811321, 471.69811321])\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "import scipy as sc\n",
+    "from scipy.optimize import linprog as lin\n",
+    "\n",
+    "mt = 778\n",
+    "mr = 388\n",
+    "\n",
+    "c = [-mt, -mr]\n",
+    "A = [[mt, mr]]\n",
+    "b = [550000]\n",
+    "Aeq = [[1, -1]]\n",
+    "beq = [0]\n",
+    "\n",
+    "\n",
+    "res = lin(c, A_ub=A, b_ub=b, A_eq=Aeq, b_eq=beq, method='simplex', options={\"disp\": True})\n",
+    "\n",
+    "print(res)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "9b69373b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\"\"\"\n",
+    "On trouve qu'en moyenne on peut dépenser 470$ sur une machine par an,\n",
+    "ce qui est concevable en considérant que le plupart des machines ne sont\n",
+    "pas disfonctionnelles et donc n'auront pas besoin de maintenance.\n",
+    "\"\"\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "09653851",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\"\"\"\n",
+    "Conclusion:\n",
+    "\n",
+    "La solution la plus otpimisée est la suivante:\n",
+    "- utilisation des 7M$\n",
+    "- 1554 employés\n",
+    "- 778 machines trottoire\n",
+    "- 338 machines route\n",
+    "- Le déneigement a lieu pendant 1h tous les matins\n",
+    "- 550.000$ réservés pour la maintenance des machines\n",
+    "\"\"\""
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.10"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
