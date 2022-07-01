@@ -1,6 +1,6 @@
 # ERO_Deneigemoi
 
-run pip install osmnx
+pip install osmnx
 
 #partie théorie:
 
